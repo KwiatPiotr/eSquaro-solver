@@ -15,6 +15,7 @@ grid = [
 	[4, 3, 2, 3, 2],
 	[2, 1, 2, 4, 2]
 ]
+# grid = [[1]]
 
 
 x_len = len(grid)		# -> i
@@ -66,12 +67,15 @@ for i in range(x_len):
 
 # print(s.check())
 while s.check() == sat:
-	model = s.model()
-	term = []
-	for i in range(x_len):
-		for j in range(y_len):
-			term.append(model[var[i][j]] != var[i][j])
-	print_model(model, var)
-	s.add(Or(term))
+    model = s.model()
+    term = []
+    for i in range(x_len+1):
+        for j in range(y_len+1):
+            term.append(model[var[i][j]] != var[i][j])
+    print(model)
+    print(term)
+    print(s.sexpr())
+    print_model(model, var)
+    s.add(Or(term))
 
 

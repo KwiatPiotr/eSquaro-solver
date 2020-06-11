@@ -97,6 +97,7 @@ class eSquaroSolverClass():
         # creating matrix of z3 variables and z3 obj
         self.var = [[Bool('_' + str(j) + '_' + str(i)) for i in range(self.xvars)] for j in range(self.yvars)]
         self.s = Solver()
+        self.g = Goal()
         
         # adding rules to solve puzzle
         for i in range(self.xlen):
@@ -109,9 +110,40 @@ class eSquaroSolverClass():
                             Not(self.var[i][j+1]),
                             Not(self.var[i+1][j+1]))
                     )
+                    self.g.add(
+                        And(
+                            Not(self.var[i][j]),
+                            Not(self.var[i+1][j]),
+                            Not(self.var[i][j+1]),
+                            Not(self.var[i+1][j+1]))
+                    )
 
                 elif self.grid[i][j] == 1:
                     self.s.add(
+                        Or(
+                            And(
+                                self.var[i][j],
+                                Not(self.var[i+1][j]),
+                                Not(self.var[i][j+1]),
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                Not(self.var[i][j]),
+                                self.var[i+1][j],
+                                Not(self.var[i][j+1]),
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                Not(self.var[i][j]),
+                                Not(self.var[i+1][j]),
+                                self.var[i][j+1],
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                Not(self.var[i][j]),
+                                Not(self.var[i+1][j]),
+                                Not(self.var[i][j+1]),
+                                self.var[i+1][j+1]),
+                        )
+                    )
+                    self.g.add(
                         Or(
                             And(
                                 self.var[i][j],
@@ -173,9 +205,69 @@ class eSquaroSolverClass():
                                 self.var[i+1][j+1])
                         )
                     )
+                    self.g.add(
+                        Or(
+                            And(
+                                self.var[i][j],
+                                self.var[i+1][j],
+                                Not(self.var[i][j+1]),
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                self.var[i][j],
+                                Not(self.var[i+1][j]),
+                                self.var[i][j+1],
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                self.var[i][j],
+                                Not(self.var[i+1][j]),
+                                Not(self.var[i][j+1]),
+                                self.var[i+1][j+1]),
+
+                            And(
+                                Not(self.var[i][j]),
+                                self.var[i+1][j],
+                                self.var[i][j+1],
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                Not(self.var[i][j]),
+                                self.var[i+1][j],
+                                Not(self.var[i][j+1]),
+                                self.var[i+1][j+1]),
+
+                            And(
+                                Not(self.var[i][j]),
+                                Not(self.var[i+1][j]),
+                                self.var[i][j+1],
+                                self.var[i+1][j+1])
+                        )
+                    )
                 
                 elif self.grid[i][j] == 3:
                     self.s.add(
+                        Or(
+                            And(
+                                self.var[i][j],
+                                self.var[i+1][j],
+                                self.var[i][j+1],
+                                Not(self.var[i+1][j+1])),
+                            And(
+                                self.var[i][j],
+                                self.var[i+1][j],
+                                Not(self.var[i][j+1]),
+                                self.var[i+1][j+1]),
+                            And(
+                                self.var[i][j],
+                                Not(self.var[i+1][j]),
+                                self.var[i][j+1],
+                                self.var[i+1][j+1]),
+                            And(
+                                Not(self.var[i][j]),
+                                self.var[i+1][j],
+                                self.var[i][j+1],
+                                self.var[i+1][j+1]),
+                        )
+                    )
+                    self.g.add(
                         Or(
                             And(
                                 self.var[i][j],
@@ -208,7 +300,21 @@ class eSquaroSolverClass():
                             self.var[i][j+1],
                             self.var[i+1][j+1])
                     )
+                    self.g.add(
+                        And(
+                            self.var[i][j],
+                            self.var[i+1][j],
+                            self.var[i][j+1],
+                            self.var[i+1][j+1])
+                    )
 
+        # DIMACS
+        t = Then('bit-blast', 'tseitin-cnf')
+        subgoal = t(self.g)
+        print(type(subgoal[0]))
+        print(subgoal[0].dimacs())
+        # DIMACS
+        
         # if problem is unsolvable return 1
         if self.s.check() == unsat:
             return 1
@@ -237,7 +343,6 @@ class eSquaroSolverClass():
 
                 # adding current result to solver not to create infinite loop
                 self.s.add(Or(term))
-            
             return 0
                 
 
@@ -325,20 +430,19 @@ class eSquaroSolverClass():
 
 
 grid = [
-    [0, 4],
-    [4, 4]
+    [2]
 ]
 
-grid = puzzles.grid_10_10
+# grid = puzzles.grid_10_10
 
 s = eSquaroSolverClass('xyz_s')
 s.get_grid(grid)
 if s.solve_SAT():
     print('wrong puzzle')
 
-print('------------------------------------------------')
+# print('------------------------------------------------')
 
-s2 = eSquaroSolverClass('xyz_a')
-s2.get_grid(grid)
-if s2.solve_arithmetic():
-    print('wrong puzzle')
+# s2 = eSquaroSolverClass('xyz_a')
+# s2.get_grid(grid)
+# if s2.solve_arithmetic():
+#     print('wrong puzzle')
