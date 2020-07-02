@@ -8,6 +8,10 @@ class Application(tk.Frame):
     def __init__(self, master: tk.Tk = None):
         super().__init__(master)
         self.master = master
+
+        self.width = 600
+        self.height = 400
+        self.update_window_size()
         
         self.list_name = []
         self.solution_counter = 0
@@ -44,14 +48,19 @@ class Application(tk.Frame):
         tk.Button(self.master, text='Next', command=self.next).grid(row=3, column=2, columnspan=2)
 
         # Canvas
-        self.canvas = tk.Canvas(self.master, width=1000, height=1000)
-        self.canvas.grid(row=4, column=2, rowspan=1000)
-        img = tk.PhotoImage(file='hehe-0.png')
+        self.canvas = tk.Canvas(self.master, width=250, height=250)
+        self.canvas.grid(row=4, column=2, rowspan=50, columnspan=50)
+        # self.canvas.configure(width=600, height = 600)
+        img = tk.PhotoImage(file='base.png')
         self.image_on_canvas = self.canvas.create_image(0, 0, image=img, anchor="nw")
 
         # mainloop
         self.master.mainloop()
 
+
+    def update_window_size(self) -> None:
+        print('Updating window size to: ' + str(self.width) + "x" + str(self.height))
+        self.master.geometry(str(self.width) + "x" + str(self.height))
 
 
     def next(self):
@@ -66,6 +75,7 @@ class Application(tk.Frame):
                 self.canvas.itemconfig(self.image_on_canvas, image=self.list_img[self.solution_counter])
                 print(self.list_name[self.solution_counter])
         else:
+            self.entry_errors.delete('1.0', tk.END)
             self.entry_errors.insert(tk.END, 'No solution to show.\n')
 
     def submit(self):
@@ -81,6 +91,7 @@ class Application(tk.Frame):
                 txt = f.read()
                 f.close()
             except:
+                self.entry_errors.delete('1.0', tk.END)
                 self.entry_errors.insert(tk.END, 'wrong file or path: ' + txt + '.\n')
                 return
         
@@ -93,12 +104,14 @@ class Application(tk.Frame):
                     for c in row:
                         val = int(c)
                         if 4 < val or val < 0:
+                            self.entry_errors.delete('1.0', tk.END)
                             self.entry_errors.insert(tk.END, 'Number is to large. It should be in <0;4>.\n')
                         else:
                             temp.append(int(c))
                     puzzle.append(temp)
 
                 except ValueError:
+                    self.entry_errors.delete('1.0', tk.END)
                     self.entry_errors.insert(tk.END, 'No letters\n')
             
         while ([] in puzzle):
@@ -107,6 +120,7 @@ class Application(tk.Frame):
         sizes = [len(row) for row in puzzle]
         sizes.append(len(puzzle))
         if len(set(sizes)) > 1:
+            self.entry_errors.delete('1.0', tk.END)
             self.entry_errors.insert(tk.END, 'Wrong size of puzzle. It should look like square.\n')
             return
 
@@ -118,12 +132,24 @@ class Application(tk.Frame):
         s = eSquaroSolverClass(filename)
         s.get_grid(puzzle)
         if s.solve_SAT():
+            self.entry_errors.delete('1.0', tk.END)
             self.entry_errors.insert(tk.END, 'Puzzle is unsolveable.')
             return
+
+        if len(puzzle) > 9:
+            val = (int(31.25) * len(puzzle)) + 1
+            self.canvas.configure(width=val, height=val)
+            self.width += int(((len(puzzle) - 8) * 31.25)) + 1
+            self.height += int(((len(puzzle) - 8) * 31.25)) + 1
+            self.update_window_size()
 
         self.list_name = s.get_results_name()
         self.solution_count = len(self.list_name)
         print('there are solutions:' + str(self.solution_count))
+
+        self.entry_errors.delete('1.0', tk.END)
+        self.entry_errors.insert(tk.END, 'There are solutions ' + str(self.solution_count) + '.\n')
+
         self.dump_out_path.delete(0, 'end')
         if len(self.list_name) > 1:
             self.dump_out_path.insert(tk.INSERT, self.list_name[0][:-5] + '*')
@@ -135,5 +161,5 @@ class Application(tk.Frame):
         
 
 root = tk.Tk()
-root.title('asldkjk')
+root.title('eSquaroSolver')
 app = Application(root)

@@ -3,6 +3,7 @@ from typing import List, Union
 from PIL import Image, ImageDraw, ImageFont
 import puzzles
 import time
+import numpy as np
 
 
 class eSquaroSolverClass():
@@ -23,7 +24,7 @@ class eSquaroSolverClass():
     # Function add new variables (puzzle's shape and count of variables)
     #
     def get_grid(self, grid: List[List[int]]) -> None:
-        self.grid = grid
+        self.grid = np.array(grid).T.tolist()
         self.xlen = len(grid)
         self.ylen = len(grid[0])
         self.xvars = len(grid) + 1
