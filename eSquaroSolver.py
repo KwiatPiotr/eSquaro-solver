@@ -14,6 +14,7 @@ class eSquaroSolverClass():
     #
     def __init__(self, name: str) -> None:
         self.name = name
+        self.results_name = []
 
     # eSquaroSolverClass.get_grid(grid)
     #   param: grid (List[List[int]]) -> representation of eSquaro puzzle
@@ -305,6 +306,7 @@ class eSquaroSolverClass():
             
             
             img.save(name + '-' + str(counter) + '.png')
+            self.results_name.append(name + '-' + str(counter) + '.png')
             counter += 1
 
 
@@ -322,23 +324,26 @@ class eSquaroSolverClass():
             for j in range(self.yvars):
                 buff += '1' if model[var[i][j]] else '0'
             print(buff)
+    
+    def get_results_name(self):
+        return list(set(self.results_name))
 
+if __name__ == '__main__':
+    grid = [
+        [0, 4],
+        [4, 4]
+    ]
 
-grid = [
-    [0, 4],
-    [4, 4]
-]
+    grid = puzzles.grid_10_10
 
-grid = puzzles.grid_10_10
+    s = eSquaroSolverClass('xyz_s')
+    s.get_grid(grid)
+    if s.solve_SAT():
+        print('wrong puzzle')
 
-s = eSquaroSolverClass('xyz_s')
-s.get_grid(grid)
-if s.solve_SAT():
-    print('wrong puzzle')
+    print('------------------------------------------------')
 
-print('------------------------------------------------')
-
-s2 = eSquaroSolverClass('xyz_a')
-s2.get_grid(grid)
-if s2.solve_arithmetic():
-    print('wrong puzzle')
+    s2 = eSquaroSolverClass('xyz_a')
+    s2.get_grid(grid)
+    if s2.solve_arithmetic():
+        print('wrong puzzle')
